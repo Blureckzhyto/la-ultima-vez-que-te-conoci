@@ -158,8 +158,8 @@ function returnToCover() {
     sheet.removeEventListener('animationend', finishTurn);
     finishTurn = null;
     turning = false;
-    sheet.classList.remove('turning', 'backward');
   }
+  sheet.classList.remove('turning', 'backward');
   opened = false;
   cover.classList.remove('settled', 'opening');
   $('#bookScene').classList.remove('is-open');
@@ -197,8 +197,12 @@ function turnPage(direction) {
     finishTurn = null;
     pageStart = nextStart;
     render();
-    sheet.classList.remove('turning', 'backward');
-    turning = false;
+    // Paint the next spread under the turned leaf before removing that leaf.
+    // This prevents a one-frame stale/blank spread at the animation boundary.
+    window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
+      sheet.classList.remove('turning', 'backward');
+      turning = false;
+    }));
   };
   sheet.addEventListener('animationend', finishTurn);
 }
