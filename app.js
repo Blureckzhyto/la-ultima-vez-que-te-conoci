@@ -10,7 +10,7 @@ const PAGE_KEY = 'book-page-start-v2';
 const configured = window.SUPABASE_CONFIG || {};
 const supabaseReady = Boolean(window.supabase?.createClient && configured.url?.startsWith('https://') && configured.anonKey && !configured.anonKey.startsWith('PEGA_'));
 const sbClient = supabaseReady ? window.supabase.createClient(configured.url, configured.anonKey) : null;
-let chapter = null;
+let chapters = [];
 let storyPages = [];
 let pageStart = Math.max(1, Number(localStorage.getItem(PAGE_KEY) || 1));
 let currentUser = null;
@@ -43,27 +43,33 @@ function splitToLength(text, limit) {
   return chunks;
 }
 function paginate(capacity = smallScreen.matches ? 520 : 750) {
-  if (!chapter) return [];
-  const result = [{ paragraphs: [], used: 0 }];
-  for (const paragraph of chapter.paragraphs) {
-    const parts = splitToLength(paragraph, capacity - 40);
-    for (const part of parts) {
-      let current = result[result.length - 1];
-      const partCost = part.length + 30;
-      const budget = result.length === 1 ? capacity - 85 : capacity;
-      if (current.paragraphs.length && current.used + partCost > budget) {
-        current = { paragraphs: [], used: 0 };
-        result.push(current);
+  if (!chapters.length) return [];
+  const result = [];
+  for (const currentChapter of chapters) {
+    let current = { paragraphs: [], used: 0, chapter: currentChapter, chapterStart: true };
+    result.push(current);
+    for (const paragraph of currentChapter.paragraphs) {
+      const parts = splitToLength(paragraph, capacity - 40);
+      for (const part of parts) {
+        const partCost = part.length + 30;
+        const budget = current.chapterStart ? capacity - 65 : capacity;
+        if (current.paragraphs.length && current.used + partCost > budget) {
+          current = { paragraphs: [], used: 0, chapter: currentChapter, chapterStart: false };
+          result.push(current);
+        }
+        current.paragraphs.push(part);
+        current.used += partCost;
       }
-      current.paragraphs.push(part);
-      current.used += partCost;
     }
   }
   return result;
 }
 async function buildPages() {
   await document.fonts.ready;
-  const viewportCapacity = smallScreen.matches ? 520 : window.innerHeight < 780 ? 490 : window.innerHeight < 950 ? 620 : 750;
+  const scene = $('#bookScene');
+  const pageWidth = smallScreen.matches ? scene.clientWidth - 60 : scene.clientWidth / 2 - 136;
+  const pageHeight = scene.clientHeight - (smallScreen.matches ? 88 : 120);
+  const viewportCapacity = Math.max(170, Math.min(750, Math.floor((pageWidth / (smallScreen.matches ? 7.8 : 9.5)) * (pageHeight / (smallScreen.matches ? 24 : 29)) * .82)));
   let capacity = viewportCapacity;
   for (let attempt = 0; attempt < 7; attempt++) {
     storyPages = paginate(capacity);
@@ -88,8 +94,11 @@ function pageMarkup(index) {
   const item = storyPages[index];
   if (!item) return '<div class="page-copy empty-page" aria-label="Página en blanco"></div>';
   const paragraphs = item.paragraphs.map(text => `<p>${escapeHtml(text)}</p>`).join('');
-  const title = index === 0 ? `<h2 class="chapter-title">${escapeHtml(chapter.title)}</h2>` : '';
-  return `<div class="page-copy"><div class="running-head">CAPÍTULO ${String(chapter.number).padStart(2, '0')} <span>·</span> ${escapeHtml(chapter.title.toUpperCase())}</div>${title}<div class="story-text">${paragraphs}</div></div>`;
+  const title = item.chapterStart ? `<h2 class="chapter-title">${escapeHtml(item.chapter.title)}</h2>` : '';
+  return `<div class="page-copy"><div class="running-head">CAPÍTULO ${String(item.chapter.number).padStart(2, '0')} <span>·</span> ${escapeHtml(item.chapter.title.toUpperCase())}</div>${title}<div class="story-text">${paragraphs}</div></div>`;
+}
+function currentChapter() {
+  return storyPages[pageStart]?.chapter || storyPages[pageStart - 1]?.chapter || chapters[0] || null;
 }
 function pageFace(index, side) {
   return `${pageMarkup(index)}<span class="page-number ${side}">${index >= 0 && index < storyPages.length ? index + 1 : ''}</span>`;
@@ -292,9 +301,10 @@ function showFormError(message) {
   else toast(message);
 }
 async function showComments() {
-  showModal(`<div class="eyebrow" style="justify-content:flex-start;color:#438da0">CAPÍTULO ${String(chapter?.number || 1).padStart(2, '0')}</div><h2>Comentarios</h2><p class="sub">Una conversación tranquila sobre la lectura.</p><div class="comments-list">Cargando comentarios…</div>`);
+  const discussionChapter = currentChapter();
+  showModal(`<div class="eyebrow" style="justify-content:flex-start;color:#438da0">CAPÍTULO ${String(discussionChapter?.number || 1).padStart(2, '0')}</div><h2>Comentarios</h2><p class="sub">Una conversación tranquila sobre la lectura.</p><div class="comments-list">Cargando comentarios…</div>`);
   try {
-    const { data: comments, error } = await requireSupabase().from('comments').select('id, body, created_at, profiles(display_name)').eq('chapter_number', chapter?.number || 1).order('created_at', { ascending: false }).limit(50);
+    const { data: comments, error } = await requireSupabase().from('comments').select('id, body, created_at, profiles(display_name)').eq('chapter_number', discussionChapter?.number || 1).order('created_at', { ascending: false }).limit(50);
     if (error) throw error;
     const list = comments.length ? comments.map(comment => {
       const date = new Intl.DateTimeFormat('es-MX', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(comment.created_at));
@@ -303,14 +313,14 @@ async function showComments() {
     const composer = currentUser
       ? `<form id="commentForm"><label for="commentBody">TU COMENTARIO</label><textarea id="commentBody" maxlength="2000" placeholder="¿Qué te dejó este capítulo?" required></textarea><p class="form-error" id="commentError" role="alert" aria-live="polite"></p><button class="primary">PUBLICAR COMENTARIO</button></form>`
       : `<p class="fine-print">Inicia sesión para participar en la conversación.</p><button class="primary" id="commentLogin">INICIAR SESIÓN</button>`;
-    showModal(`<div class="eyebrow" style="justify-content:flex-start;color:#438da0">CAPÍTULO ${String(chapter?.number || 1).padStart(2, '0')}</div><h2>Comentarios</h2><p class="sub">Una conversación tranquila sobre la lectura.</p><div class="comments-list">${list}</div>${composer}`);
+    showModal(`<div class="eyebrow" style="justify-content:flex-start;color:#438da0">CAPÍTULO ${String(discussionChapter?.number || 1).padStart(2, '0')}</div><h2>Comentarios</h2><p class="sub">Una conversación tranquila sobre la lectura.</p><div class="comments-list">${list}</div>${composer}`);
     if (currentUser) {
       $('#commentForm').addEventListener('submit', async event => {
         event.preventDefault();
         const button = $('#commentForm').querySelector('button.primary');
         button.disabled = true;
         try {
-          const { error } = await requireSupabase().from('comments').insert({ chapter_number: chapter.number, body: $('#commentBody').value.trim() });
+          const { error } = await requireSupabase().from('comments').insert({ chapter_number: discussionChapter.number, body: $('#commentBody').value.trim() });
           if (error) throw error;
           await showComments();
         } catch (error) {
@@ -367,7 +377,7 @@ async function boot() {
       if (!response.ok) throw new Error('No se pudo cargar el capítulo.');
       return response.json();
     });
-    chapter = data.chapters[0];
+    chapters = data.chapters;
     await buildPages();
   } catch (error) { console.error(error); toast('No se pudo cargar el capítulo.'); }
   if (!sbClient) {
