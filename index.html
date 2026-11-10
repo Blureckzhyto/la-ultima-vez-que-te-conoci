@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#080c19">
+<title>La última vez que te conocí — Ciencia ficción</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="stars" aria-hidden="true"></div><div class="nebula" aria-hidden="true"></div>
+<header class="topbar"><a class="wordmark" href="#inicio"><span class="mark">◉</span> LIBRO ABIERTO</a><nav><button class="text-btn" id="aboutBtn">EL PROYECTO</button><button class="account-btn" id="accountBtn"><span class="avatar">＋</span><span>Crear cuenta / Entrar</span></button></nav></header>
+<main id="inicio"><section class="intro"><div class="eyebrow"><span class="live-dot"></span> CIENCIA FICCIÓN <span class="eyebrow-line"></span> LIBRO ABIERTO</div></section>
+<section class="stage" aria-label="Libro interactivo"><div class="book-scene" id="bookScene"><div class="closed-cover" id="closedCover" role="button" tabindex="0" aria-label="Abrir el libro"><div class="cover-spine"></div><div class="cover-edge"></div><div class="cover-face"><div class="cover-grid"></div><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="planet"></div><div class="cover-label">ARCHIVO <span>·</span> 001</div><div class="cover-title-placeholder">LA ÚLTIMA VEZ<br>QUE TE CONOCÍ</div><div class="cover-corner">◈</div></div></div><div class="open-pages" id="openPages" aria-hidden="true"><div class="sheet sheet-left" id="leftPage"><div class="page-number" id="leftNumber">—</div></div><div class="sheet sheet-right" id="rightPage"><div class="page-number" id="rightNumber">—</div></div><div class="center-seam"></div><div class="page-turn" id="pageTurn"><div class="turn-face turn-front" id="turnFront"></div><div class="turn-face turn-back" id="turnBack"></div></div></div></div><button class="open-hint" id="openHint"><span>ABRIR</span><span class="hint-arrow">↗</span></button><div class="reader-controls" id="readerControls"><button class="control-btn" id="prevBtn" aria-label="Página anterior">←</button><div class="progress-block"><span id="pageCount">CERRADO</span><div class="progress-track"><div id="progressFill"></div></div></div><button class="control-btn" id="nextBtn" aria-label="Página siguiente">→</button><button class="sound-btn" id="soundBtn" aria-label="Activar o desactivar sonido">♫ <span>SONIDO</span></button><button class="comment-btn" id="commentsBtn">COMENTARIOS</button></div></section>
+</main>
+<footer><span>LIBRO ABIERTO · CIENCIA FICCIÓN</span></footer>
+<div class="modal-backdrop" id="modalBackdrop"><section class="modal" role="dialog" aria-modal="true"><button class="modal-close" id="modalClose" aria-label="Cerrar">×</button><div id="modalContent"></div></section></div><div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="app.js"></script>
+</body></html>
