@@ -1,6 +1,8 @@
 const $ = selector => document.querySelector(selector);
 const cover = $('#closedCover');
 const coverBack = $('.cover-back');
+const pageAudio = $('#pageAudio');
+pageAudio.volume = .46;
 const pages = $('#openPages');
 const sheet = $('#pageTurn');
 const turnFront = $('#turnFront');
@@ -36,8 +38,6 @@ let accountMode = 'signup';
 let progressTimer;
 let resizeTimer;
 let activeTurn = null;
-let audioContext = null;
-let pageSoundBuffer = null;
 const smallScreen = window.matchMedia('(max-width: 700px)');
 
 function requireSupabase() {
@@ -172,26 +172,14 @@ function prepareTurnSheets() {
 function pageSound() {
   if (!soundOn) return;
   try {
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (!audioContext) audioContext = new AudioContextClass();
-    const context = audioContext;
-    if (context.state === 'suspended') context.resume();
-    if (!pageSoundBuffer) {
-      const length = Math.floor(context.sampleRate * .24);
-      pageSoundBuffer = context.createBuffer(1, length, context.sampleRate);
-      const data = pageSoundBuffer.getChannelData(0);
-      for (let i = 0; i < length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / length);
-    }
-    const source = context.createBufferSource();
-    const filter = context.createBiquadFilter();
-    const gain = context.createGain();
-    source.buffer = pageSoundBuffer;
-    filter.type = 'lowpass'; filter.frequency.value = 1150;
-    gain.gain.setValueAtTime(.12, context.currentTime);
-    gain.gain.exponentialRampToValueAtTime(.001, context.currentTime + .22);
-    source.connect(filter); filter.connect(gain); gain.connect(context.destination);
-    source.start(); source.stop(context.currentTime + .24);
+    pageAudio.pause();
+    pageAudio.currentTime = 0;
+    const playback = pageAudio.play();
+    if (playback?.catch) playback.catch(() => {});
   } catch (_) { /* Sound is optional when browser audio is unavailable. */ }
+}
+function schedulePageSound() {
+  window.requestAnimationFrame(() => window.setTimeout(pageSound, 0));
 }
 function openBook() {
   if (opened) return;
@@ -202,7 +190,7 @@ function openBook() {
   pages.classList.add('visible');
   pages.setAttribute('aria-hidden', 'false');
   $('#readerControls').classList.add('visible');
-  window.requestAnimationFrame(() => pageSound());
+  schedulePageSound();
 }
 cover.addEventListener('transitionend', event => {
   if (event.propertyName === 'transform' && cover.classList.contains('opening')) cover.classList.add('settled');
@@ -244,7 +232,7 @@ function turnPage(direction) {
     activeUnderlay.classList.remove('visible');
     turning = false;
     prepareTurnSheets();
-    window.requestAnimationFrame(() => pageSound());
+    schedulePageSound();
     return;
   }
   const animation = activeSheet.animate(
@@ -255,7 +243,7 @@ function turnPage(direction) {
     { duration: 680, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'forwards' }
   );
   activeTurn = animation;
-  window.requestAnimationFrame(() => pageSound());
+  schedulePageSound();
   animation.finished.then(() => {
     if (activeTurn !== animation) return;
     pageStart = nextStart;
@@ -408,6 +396,7 @@ leftPage.addEventListener('click', () => turnPage(-1));
 rightPage.addEventListener('click', () => turnPage(1));
 $('#soundBtn').addEventListener('click', () => {
   soundOn = !soundOn;
+  if (!soundOn) { pageAudio.pause(); pageAudio.currentTime = 0; }
   $('#soundBtn').classList.toggle('off', !soundOn);
   $('#soundBtn').innerHTML = soundOn ? '♫ <span>SONIDO</span>' : '♫ <span>MUDO</span>';
   $('#soundBtn').setAttribute('aria-label', soundOn ? 'Desactivar sonido' : 'Activar sonido');

@@ -151,3 +151,11 @@ body{font-family:var(--sans);background:radial-gradient(ellipse at 52% 42%,#121d
   .cover-face,.cover-back{border-radius:8px}
 }
 @media(prefers-reduced-motion:reduce){#leftPage{transition-duration:.01ms;will-change:auto}}
+
+/* Keep a solid paper core and a visible page block through the cover's edge-on frame. */
+.closed-cover{background:linear-gradient(90deg,#e9e2d3 0%,#f7f2e7 13%,#fbf7ef 49%,#eee8dc 100%)}
+.closed-cover.settled{opacity:0;transition:opacity .12s ease,visibility 0s linear .12s}
+.cover-face,.cover-back{will-change:transform}
+.cover-face{transform:translateZ(.15px)}
+.cover-back{transform:rotateY(180deg) translateZ(.15px)}
+.cover-edge{top:0;right:-6px;bottom:0;width:6px;transform:rotateY(90deg);transform-origin:left center;background:repeating-linear-gradient(0deg,#d9d4c7 0 1px,#f3eee4 1px 3px);backface-visibility:visible;-webkit-backface-visibility:visible}
