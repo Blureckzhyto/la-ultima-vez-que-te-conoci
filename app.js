@@ -1,5 +1,6 @@
 const $ = selector => document.querySelector(selector);
 const cover = $('#closedCover');
+const coverBack = $('.cover-back');
 const pages = $('#openPages');
 const sheet = $('#pageTurn');
 const turnFront = $('#turnFront');
@@ -143,6 +144,7 @@ function render() {
     leftPage.innerHTML = pageFace(pageStart - 1, 'left');
     rightPage.innerHTML = pageFace(pageStart, 'right');
   }
+  coverBack.innerHTML = mobile ? '' : pageFace(pageStart - 1, 'left');
   const lastStart = lastPageStart(mobile);
   const rightLabel = mobile ? String(Math.min(pageStart, storyPages.length)) : String(Math.min(pageStart + 1, storyPages.length));
   $('#pageCount').textContent = `PÁGINAS ${pageStart}–${rightLabel}`;
