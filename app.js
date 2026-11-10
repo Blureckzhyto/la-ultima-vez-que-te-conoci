@@ -89,8 +89,17 @@ async function buildPages() {
     if (!overflow || capacity <= 340) break;
     capacity -= 45;
   }
-  pageStart = Math.min(pageStart, storyPages.length);
+  pageStart = normalizePageStart(pageStart);
   render();
+}
+function lastPageStart(mobile = smallScreen.matches) {
+  if (mobile) return Math.max(1, storyPages.length);
+  return Math.max(1, 2 * Math.floor((storyPages.length - 1) / 2) + 1);
+}
+function normalizePageStart(value = pageStart, mobile = smallScreen.matches) {
+  const lastStart = lastPageStart(mobile);
+  const clamped = Math.max(1, Math.min(Number(value) || 1, lastStart));
+  return mobile ? clamped : 1 + 2 * Math.floor((clamped - 1) / 2);
 }
 function pageMarkup(index) {
   const item = storyPages[index];
@@ -108,7 +117,7 @@ function pageFace(index, side) {
 function render() {
   if (!storyPages.length) return;
   const mobile = smallScreen.matches;
-  if (!mobile && pageStart > 1 && pageStart >= storyPages.length) pageStart = Math.max(1, storyPages.length - 1);
+  pageStart = normalizePageStart(pageStart, mobile);
   if (mobile) {
     leftPage.innerHTML = '';
     leftPage.classList.add('mobile-hidden');
@@ -120,10 +129,11 @@ function render() {
     leftPage.innerHTML = pageFace(pageStart - 1, 'left');
     rightPage.innerHTML = pageFace(pageStart, 'right');
   }
-  const lastStart = mobile ? storyPages.length : Math.max(1, storyPages.length - 1);
+  const lastStart = lastPageStart(mobile);
   const rightLabel = mobile ? String(Math.min(pageStart, storyPages.length)) : String(Math.min(pageStart + 1, storyPages.length));
   $('#pageCount').textContent = `PÁGINAS ${pageStart}–${rightLabel}`;
-  $('#progressFill').style.width = `${Math.min(100, Math.round((pageStart / storyPages.length) * 100))}%`;
+  const visibleEnd = mobile ? Math.min(pageStart, storyPages.length) : Math.min(pageStart + 1, storyPages.length);
+  $('#progressFill').style.width = `${Math.min(100, Math.round((visibleEnd / storyPages.length) * 100))}%`;
   $('#prevBtn').disabled = pageStart <= 1;
   $('#nextBtn').disabled = pageStart >= lastStart;
   localStorage.setItem(PAGE_KEY, pageStart);
@@ -187,8 +197,8 @@ function returnToCover() {
 function turnPage(direction) {
   if (!opened || turning || !storyPages.length) return;
   const mobile = smallScreen.matches;
-  const lastStart = mobile ? storyPages.length : Math.max(1, storyPages.length - 1);
-  const nextStart = pageStart + direction;
+  const lastStart = lastPageStart(mobile);
+  const nextStart = pageStart + direction * (mobile ? 1 : 2);
   if (nextStart < 1 || nextStart > lastStart) return;
   turning = true;
   pageSound();
