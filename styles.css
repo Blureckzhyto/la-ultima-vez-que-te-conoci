@@ -118,3 +118,8 @@ body{font-family:var(--sans);background:radial-gradient(ellipse at 52% 42%,#121d
 .turn-underlay.sheet-right{left:50%;right:0;width:50%;border-radius:0 8px 7px 0}
 .turn-underlay.visible{display:block}
 .turn-underlay.mobile-full{left:0;right:0;width:100%;border-radius:8px}
+
+/* Reveal the first spread only as the cover finishes opening. */
+.open-pages{transition:opacity .18s ease;transition-delay:0s}
+.open-pages.visible{transition-delay:.5s}
+@media(prefers-reduced-motion:reduce){.open-pages.visible{transition-delay:0s!important}}
