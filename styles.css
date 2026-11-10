@@ -31,9 +31,16 @@ body{font-family:var(--sans);background:radial-gradient(ellipse at 52% 42%,#121d
 .intro h1{margin:3px auto 12px;font:500 clamp(46px,5.4vw,70px)/.96 var(--title-serif);letter-spacing:-.7px;color:#f3f1ed;text-shadow:0 0 34px #8edffa20}
 .intro h1 em{font-style:italic;font-weight:500;color:#9ae7eb}
 .stage{height:auto;min-height:0;margin:0;padding:24px 24px 88px;scroll-margin-top:12px}
-.book-scene{width:min(1220px,93vw);height:clamp(480px,61vw,700px);filter:drop-shadow(0 36px 56px #0009)}
+.book-scene{width:min(1220px,93vw);height:clamp(480px,61vw,700px);filter:none}
 .open-pages{transition:opacity .32s ease;transition-delay:0s}
 .page-turn.turning{display:block;will-change:transform;backface-visibility:visible;transform:translateZ(0)}
+.open-pages{box-shadow:0 36px 56px #0009}
+.page-turn.turning{transform:translate3d(0,0,0)}
+.turn-face{transform-style:preserve-3d;backface-visibility:hidden;-webkit-backface-visibility:hidden;will-change:transform}
+.turn-face .page-copy{transform:translateZ(.1px);backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.turn-back{transform:rotateY(180deg) translateZ(.1px)}
+.stage{perspective:none}
+.book-scene{perspective:5000px}
 .sheet{background:linear-gradient(90deg,#e9e2d3 0%,#f7f2e7 13%,#fbf7ef 49%,#eee8dc 100%)}
 .sheet-right{background:linear-gradient(90deg,#ece5d9 0%,#fbf7ef 11%,#f8f3e8 100%)}
 .page-copy,.turn-face .page-copy{inset:52px 68px 62px}

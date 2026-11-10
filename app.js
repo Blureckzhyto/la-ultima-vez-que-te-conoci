@@ -220,7 +220,7 @@ function turnPage(direction) {
       { transform: 'rotateY(0deg)' },
       { transform: direction > 0 ? 'rotateY(-180deg)' : 'rotateY(180deg)' }
     ],
-    { duration: 820, easing: 'cubic-bezier(.36,.02,.22,1)', fill: 'forwards' }
+    { duration: 680, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'forwards' }
   );
   activeTurn = animation;
   animation.finished.then(() => {
