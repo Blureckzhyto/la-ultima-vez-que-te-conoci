@@ -127,7 +127,8 @@ body{font-family:var(--sans);background:radial-gradient(ellipse at 52% 42%,#121d
 .open-pages.visible{pointer-events:auto}
 .open-hint{top:auto;bottom:29px}
 .reader-controls{top:auto;bottom:20px}
-#leftPage{clip-path:inset(0 0 0 100%);transition:clip-path .14s ease-out;will-change:clip-path}
+/* Keep the real left page hidden until the cover has visibly started to lift. */
+#leftPage{clip-path:inset(0 0 0 100%);transition:clip-path .36s cubic-bezier(.4,0,.2,1) .18s;will-change:clip-path}
 .book-scene.is-open #leftPage{clip-path:inset(0)}
 #rightPage{clip-path:none;transition:none}
 .closed-cover{left:50%;width:50%;transform-origin:left center;transform-style:preserve-3d;will-change:transform;transition:transform .72s cubic-bezier(.4,0,.2,1),filter .25s}
