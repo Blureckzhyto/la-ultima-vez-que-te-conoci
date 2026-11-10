@@ -19,6 +19,7 @@ let turning = false;
 let soundOn = true;
 let accountMode = 'signup';
 let progressTimer;
+let resizeTimer;
 let finishTurn = null;
 const smallScreen = window.matchMedia('(max-width: 700px)');
 
@@ -62,8 +63,9 @@ function paginate(capacity = smallScreen.matches ? 520 : 750) {
 }
 async function buildPages() {
   await document.fonts.ready;
-  let capacity = smallScreen.matches ? 520 : 750;
-  for (let attempt = 0; attempt < 5; attempt++) {
+  const viewportCapacity = smallScreen.matches ? 520 : window.innerHeight < 780 ? 490 : window.innerHeight < 950 ? 620 : 750;
+  let capacity = viewportCapacity;
+  for (let attempt = 0; attempt < 7; attempt++) {
     storyPages = paginate(capacity);
     const probe = document.createElement('div');
     probe.className = `sheet sheet-right${smallScreen.matches ? ' mobile-full' : ''}`;
@@ -76,8 +78,8 @@ async function buildPages() {
       if (copy && copy.scrollHeight > copy.clientHeight + 2) { overflow = true; break; }
     }
     probe.remove();
-    if (!overflow || capacity <= 400) break;
-    capacity -= 70;
+    if (!overflow || capacity <= 340) break;
+    capacity -= 45;
   }
   pageStart = Math.min(pageStart, storyPages.length);
   render();
@@ -349,7 +351,11 @@ $('#homeBtn').addEventListener('click', event => { event.preventDefault(); retur
 $('#modalClose').addEventListener('click', closeModal);
 backdrop.addEventListener('click', event => { if (event.target === backdrop) closeModal(); });
 smallScreen.addEventListener('change', () => { buildPages(); });
-window.addEventListener('resize', () => { if (turning) return; render(); });
+window.addEventListener('resize', () => {
+  if (turning) return;
+  window.clearTimeout(resizeTimer);
+  resizeTimer = window.setTimeout(() => buildPages(), 120);
+});
 
 async function boot() {
   try {

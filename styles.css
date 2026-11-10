@@ -67,7 +67,7 @@ body{font-family:var(--sans);background:radial-gradient(ellipse at 52% 42%,#121d
 .modal .primary:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 11px 24px #172c4945;filter:brightness(1.12)}
 .modal .switch{font-weight:600}
 .comment-item{padding:14px 12px;border:1px solid #cdd2cf;border-radius:10px;background:#f7f5ef;margin:9px 0}
-@media(max-height:850px) and (min-width:701px){.book-scene{height:min(58vh,620px)}.stage{padding-top:18px;padding-bottom:82px}}
+@media(max-height:850px) and (min-width:701px){.intro{padding-top:15px}.intro h1{font-size:clamp(46px,4.8vw,58px);margin-bottom:9px}.book-scene{height:clamp(420px,64vh,700px)}.stage{padding-top:14px;padding-bottom:70px}.reader-controls{bottom:18px}}
 @media(max-width:700px){
   .topbar{height:64px;padding:0 16px}.wordmark{min-height:38px;padding:0 13px;font-size:9px}
   .intro{padding:22px 16px 0}.intro .eyebrow{font-size:8px}.intro h1{max-width:15ch;font-size:clamp(40px,10vw,52px);line-height:.93;margin:5px auto 10px;letter-spacing:-.25px}
