@@ -29,6 +29,7 @@ let storyPages = [];
 let pageStart = Math.max(1, Number(localStorage.getItem(PAGE_KEY) || 1));
 let currentUser = null;
 let opened = false;
+let closingToCover = false;
 let turning = false;
 let soundOn = true;
 let accountMode = 'signup';
@@ -194,6 +195,7 @@ function pageSound() {
 function openBook() {
   if (opened) return;
   opened = true;
+  closingToCover = false;
   $('#bookScene').classList.add('is-open');
   $('#openHint').classList.add('is-hidden');
   cover.classList.add('opening');
@@ -203,7 +205,13 @@ function openBook() {
   window.requestAnimationFrame(() => pageSound());
 }
 cover.addEventListener('transitionend', event => {
-  if (event.propertyName === 'transform' && cover.classList.contains('opening')) cover.classList.add('settled');
+  if (event.propertyName !== 'transform') return;
+  if (cover.classList.contains('opening')) cover.classList.add('settled');
+  else if (closingToCover) {
+    pages.classList.remove('visible');
+    pages.setAttribute('aria-hidden', 'true');
+    closingToCover = false;
+  }
 });
 function returnToCover() {
   if (activeTurn) {
@@ -216,10 +224,10 @@ function returnToCover() {
   forwardUnderlay.classList.remove('visible');
   backwardUnderlay.classList.remove('visible');
   opened = false;
+  closingToCover = pages.classList.contains('visible');
   cover.classList.remove('settled', 'opening');
   $('#bookScene').classList.remove('is-open');
-  pages.classList.remove('visible');
-  pages.setAttribute('aria-hidden', 'true');
+  if (!closingToCover) pages.setAttribute('aria-hidden', 'true');
   $('#readerControls').classList.remove('visible');
   $('#openHint').classList.remove('is-hidden');
   $('#portada').scrollIntoView({ behavior: 'smooth', block: 'start' });

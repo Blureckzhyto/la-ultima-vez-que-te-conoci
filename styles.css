@@ -119,6 +119,9 @@ body{font-family:var(--sans);background:radial-gradient(ellipse at 52% 42%,#121d
 .turn-underlay.visible{display:block}
 .turn-underlay.mobile-full{left:0;right:0;width:100%;border-radius:8px}
 
-/* Keep the first spread rendered beneath the cover; the cover itself reveals it. */
-.open-pages{opacity:1;transition:none;transition-delay:0s;pointer-events:none}
+/* Keep the closed book clean; reveal the already-rendered spread in the same frame as the cover turn. */
+.open-pages{opacity:0;transition:none;transition-delay:0s;pointer-events:none}
 .open-pages.visible{opacity:1;pointer-events:auto}
+
+/* A modest camera depth keeps the cover turn visibly three-dimensional. */
+.book-scene{perspective:1800px}
