@@ -38,6 +38,9 @@ let accountMode = 'signup';
 let progressTimer;
 let resizeTimer;
 let activeTurn = null;
+let openingQueued = false;
+let resolvePagesReady;
+const pagesReady = new Promise(resolve => { resolvePagesReady = resolve; });
 const smallScreen = window.matchMedia('(max-width: 700px)');
 
 function requireSupabase() {
@@ -181,8 +184,14 @@ function pageSound() {
 function schedulePageSound() {
   window.requestAnimationFrame(() => window.setTimeout(pageSound, 0));
 }
-function openBook() {
-  if (opened) return;
+async function openBook() {
+  if (opened || openingQueued) return;
+  if (!storyPages.length) {
+    openingQueued = true;
+    const ready = await pagesReady;
+    openingQueued = false;
+    if (!ready || opened) return;
+  }
   opened = true;
   $('#bookScene').classList.add('is-open');
   $('#openHint').classList.add('is-hidden');
@@ -426,7 +435,12 @@ async function boot() {
     });
     chapters = data.chapters;
     await buildPages();
-  } catch (error) { console.error(error); toast('No se pudo cargar el capítulo.'); }
+    resolvePagesReady(storyPages.length > 0);
+  } catch (error) {
+    resolvePagesReady(false);
+    console.error(error);
+    toast('No se pudo cargar el capítulo.');
+  }
   if (!sbClient) {
     console.warn('Supabase aún no está configurado. La lectura funciona, pero cuentas, progreso en la nube y comentarios requieren completar supabase-config.js.');
     return;

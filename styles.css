@@ -127,7 +127,7 @@ body{font-family:var(--sans);background:radial-gradient(ellipse at 52% 42%,#121d
 .open-pages.visible{pointer-events:auto}
 .open-hint{top:auto;bottom:29px}
 .reader-controls{top:auto;bottom:20px}
-#leftPage{clip-path:inset(0 0 0 100%);transition:clip-path .72s cubic-bezier(.4,0,.2,1);will-change:clip-path}
+#leftPage{clip-path:inset(0 0 0 100%);transition:clip-path .14s ease-out;will-change:clip-path}
 .book-scene.is-open #leftPage{clip-path:inset(0)}
 #rightPage{clip-path:none;transition:none}
 .closed-cover{left:50%;width:50%;transform-origin:left center;transform-style:preserve-3d;will-change:transform;transition:transform .72s cubic-bezier(.4,0,.2,1),filter .25s}
@@ -154,7 +154,7 @@ body{font-family:var(--sans);background:radial-gradient(ellipse at 52% 42%,#121d
 
 /* Keep a solid paper core and a visible page block through the cover's edge-on frame. */
 .closed-cover{background:linear-gradient(90deg,#e9e2d3 0%,#f7f2e7 13%,#fbf7ef 49%,#eee8dc 100%)}
-.closed-cover.settled{opacity:0;transition:opacity .12s ease,visibility 0s linear .12s}
+.closed-cover.settled{opacity:1;visibility:hidden;transition:visibility 0s}
 .cover-face,.cover-back{will-change:transform}
 .cover-face{transform:translateZ(.15px)}
 .cover-back{transform:rotateY(180deg) translateZ(.15px)}
