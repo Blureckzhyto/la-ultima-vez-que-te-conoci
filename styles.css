@@ -119,15 +119,34 @@ body{font-family:var(--sans);background:radial-gradient(ellipse at 52% 42%,#121d
 .turn-underlay.visible{display:block}
 .turn-underlay.mobile-full{left:0;right:0;width:100%;border-radius:8px}
 
-/* Reveal the first spread outward from beneath the rotating cover. */
+/* Keep the book in document flow so its hinge and cover never jump on open. */
+.stage{height:auto;min-height:0;margin:0;padding:24px 24px 88px;overflow:visible}
+.book-scene{position:relative;left:auto;top:auto;flex:none;width:min(1220px,93vw,100vh);height:auto;aspect-ratio:4/3;transform:translateX(-25%);transform-style:preserve-3d;perspective:1800px;transition:transform .72s cubic-bezier(.4,0,.2,1);filter:none}
+.book-scene.is-open{transform:translateX(0)}
 .open-pages{opacity:1;transition:none;pointer-events:none}
 .open-pages.visible{pointer-events:auto}
-#leftPage,#rightPage{transition:clip-path .68s cubic-bezier(.4,0,.2,1);will-change:clip-path}
-#leftPage{clip-path:inset(0 0 0 50%)}
-#rightPage{clip-path:inset(0 50% 0 0)}
-.book-scene.is-open #leftPage,.book-scene.is-open #rightPage{clip-path:inset(0)}
-@media(max-width:700px){#leftPage{clip-path:inset(0)}#rightPage{clip-path:inset(0 25%)}}
-@media(prefers-reduced-motion:reduce){#leftPage,#rightPage{transition-duration:.01ms;will-change:auto}}
-
-/* A modest camera depth keeps the cover turn visibly three-dimensional. */
-.book-scene{perspective:1800px}
+.open-hint{top:auto;bottom:29px}
+.reader-controls{top:auto;bottom:20px}
+#leftPage{clip-path:inset(0 0 0 100%);transition:clip-path .72s cubic-bezier(.4,0,.2,1);will-change:clip-path}
+.book-scene.is-open #leftPage{clip-path:inset(0)}
+#rightPage{clip-path:none;transition:none}
+.closed-cover{left:50%;width:50%;transform-origin:left center;transform-style:preserve-3d;will-change:transform;transition:transform .72s cubic-bezier(.4,0,.2,1),filter .25s}
+.book-scene.is-open .closed-cover{left:50%}
+.book-scene.is-open .closed-cover.opening{transform:rotateY(-180deg)}
+.cover-face,.cover-back{position:absolute;inset:0;overflow:hidden;border-radius:0 9px 8px 0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.cover-face{transform:translateZ(.7px);border:0;background:#052327;box-shadow:inset -10px 0 22px #020c0e55}
+.cover-face:after{content:none}
+.cover-back{transform:rotateY(180deg) translateZ(.7px);background:linear-gradient(90deg,#e8e1d4,#f8f4e9 14%,#f0ebdf);box-shadow:inset 12px 0 28px -23px #4b4439}
+.cover-back:after{content:'';position:absolute;inset:16px;border:1px solid #a9a18a70;box-shadow:inset 0 0 0 5px #ffffff15;pointer-events:none}
+.cover-art{display:block;width:100%;height:100%;object-fit:cover;object-position:center}
+@media(max-width:700px){
+  .stage{padding:18px 10px 88px}
+  .book-scene{width:min(94vw,560px);height:min(140vw,840px);transform:translateX(0);transition:none;perspective:1600px}
+  .book-scene.is-open{transform:translateX(0)}
+  .closed-cover,.book-scene.is-open .closed-cover{left:0;width:100%}
+  .book-scene.is-open .closed-cover.opening{transform:rotateY(-180deg)}
+  #leftPage{clip-path:none}
+  #rightPage{clip-path:none;width:100%}
+  .cover-face,.cover-back{border-radius:8px}
+}
+@media(prefers-reduced-motion:reduce){#leftPage{transition-duration:.01ms;will-change:auto}}

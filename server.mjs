@@ -150,6 +150,7 @@ const staticFiles = new Map([
   ['/app.js', ['app.js', 'text/javascript; charset=utf-8']],
   ['/supabase-config.js', ['supabase-config.js', 'text/javascript; charset=utf-8']],
   ['/chapters.json', ['chapters.json', 'application/json; charset=utf-8']],
+  ['/portada.png', ['portada.png', 'image/png']],
 ]);
 const server = createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
