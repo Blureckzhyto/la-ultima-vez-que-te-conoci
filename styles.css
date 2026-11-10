@@ -106,3 +106,15 @@ body{font-family:var(--sans);background:radial-gradient(ellipse at 52% 42%,#121d
 .book-scene.is-open .closed-cover.opening{transform:translate3d(50%,0,0) rotateY(-180deg)}
 .cover-face{transform:translateZ(0);will-change:transform;-webkit-backface-visibility:hidden}
 .turn-face .page-copy{will-change:transform}
+
+/* Keep glyphs rasterized into the turning paper face, not in a floating child layer. */
+.turn-face{transform-style:flat;will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.turn-front{transform:rotateY(0deg)}
+.turn-back{transform:rotateY(180deg)}
+.turn-face .page-copy,.turn-face .page-number{transform:none;will-change:auto;backface-visibility:visible;-webkit-backface-visibility:visible}
+.cover-face{transform-style:flat}
+.turn-underlay{position:absolute;top:0;bottom:0;z-index:1;display:none;pointer-events:none}
+.turn-underlay.sheet-left{left:0;right:50%;width:50%;border-radius:8px 0 0 7px}
+.turn-underlay.sheet-right{left:50%;right:0;width:50%;border-radius:0 8px 7px 0}
+.turn-underlay.visible{display:block}
+.turn-underlay.mobile-full{left:0;right:0;width:100%;border-radius:8px}

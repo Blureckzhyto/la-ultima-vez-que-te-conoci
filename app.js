@@ -11,6 +11,13 @@ backwardSheet.innerHTML = '<div class="turn-face turn-front" id="turnBackwardFro
 pages.append(backwardSheet);
 const backwardFront = $('#turnBackwardFront');
 const backwardBack = $('#turnBackwardBack');
+const forwardUnderlay = document.createElement('div');
+forwardUnderlay.className = 'sheet sheet-right turn-underlay';
+forwardUnderlay.setAttribute('aria-hidden', 'true');
+const backwardUnderlay = document.createElement('div');
+backwardUnderlay.className = 'sheet sheet-left turn-underlay';
+backwardUnderlay.setAttribute('aria-hidden', 'true');
+pages.append(forwardUnderlay, backwardUnderlay);
 const leftPage = $('#leftPage');
 const rightPage = $('#rightPage');
 const PAGE_KEY = 'book-page-start-v2';
@@ -155,6 +162,10 @@ function prepareTurnSheets() {
   turnBack.innerHTML = pageFace(forwardIndex + 1, 'left');
   backwardFront.innerHTML = pageFace(backwardIndex, 'left');
   backwardBack.innerHTML = pageFace(backwardIndex - 1, 'right');
+  forwardUnderlay.classList.toggle('mobile-full', mobile);
+  backwardUnderlay.classList.toggle('mobile-full', mobile);
+  forwardUnderlay.innerHTML = pageFace(mobile ? pageStart : pageStart + 2, 'right');
+  backwardUnderlay.innerHTML = pageFace(mobile ? pageStart - 2 : pageStart - 3, 'left');
 }
 function pageSound() {
   if (!soundOn) return;
@@ -202,6 +213,8 @@ function returnToCover() {
   }
   sheet.classList.remove('turning');
   backwardSheet.classList.remove('turning');
+  forwardUnderlay.classList.remove('visible');
+  backwardUnderlay.classList.remove('visible');
   opened = false;
   cover.classList.remove('settled', 'opening');
   $('#bookScene').classList.remove('is-open');
@@ -219,11 +232,14 @@ function turnPage(direction) {
   if (nextStart < 1 || nextStart > lastStart) return;
   turning = true;
   const activeSheet = direction > 0 ? sheet : backwardSheet;
+  const activeUnderlay = direction > 0 ? forwardUnderlay : backwardUnderlay;
+  activeUnderlay.classList.add('visible');
   activeSheet.classList.add('turning');
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     pageStart = nextStart;
     render();
     activeSheet.classList.remove('turning');
+    activeUnderlay.classList.remove('visible');
     turning = false;
     prepareTurnSheets();
     window.requestAnimationFrame(() => pageSound());
@@ -248,6 +264,7 @@ function turnPage(direction) {
         animation.cancel();
         activeTurn = null;
         activeSheet.classList.remove('turning');
+        activeUnderlay.classList.remove('visible');
         turning = false;
         prepareTurnSheets();
       }
