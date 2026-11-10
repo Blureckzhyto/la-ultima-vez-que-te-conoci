@@ -20,7 +20,9 @@ let soundOn = true;
 let accountMode = 'signup';
 let progressTimer;
 let resizeTimer;
-let finishTurn = null;
+let activeTurn = null;
+let audioContext = null;
+let pageSoundBuffer = null;
 const smallScreen = window.matchMedia('(max-width: 700px)');
 
 function requireSupabase() {
@@ -130,21 +132,25 @@ function render() {
 function pageSound() {
   if (!soundOn) return;
   try {
-    const context = new (window.AudioContext || window.webkitAudioContext)();
-    const length = Math.floor(context.sampleRate * .24);
-    const buffer = context.createBuffer(1, length, context.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / length);
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!audioContext) audioContext = new AudioContextClass();
+    const context = audioContext;
+    if (context.state === 'suspended') context.resume();
+    if (!pageSoundBuffer) {
+      const length = Math.floor(context.sampleRate * .24);
+      pageSoundBuffer = context.createBuffer(1, length, context.sampleRate);
+      const data = pageSoundBuffer.getChannelData(0);
+      for (let i = 0; i < length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / length);
+    }
     const source = context.createBufferSource();
     const filter = context.createBiquadFilter();
     const gain = context.createGain();
-    source.buffer = buffer;
+    source.buffer = pageSoundBuffer;
     filter.type = 'lowpass'; filter.frequency.value = 1150;
     gain.gain.setValueAtTime(.12, context.currentTime);
     gain.gain.exponentialRampToValueAtTime(.001, context.currentTime + .22);
     source.connect(filter); filter.connect(gain); gain.connect(context.destination);
     source.start(); source.stop(context.currentTime + .24);
-    source.onended = () => context.close();
   } catch (_) { /* Sound is optional when browser audio is unavailable. */ }
 }
 function openBook() {
@@ -163,9 +169,9 @@ cover.addEventListener('transitionend', event => {
   if (event.propertyName === 'transform' && cover.classList.contains('opening')) cover.classList.add('settled');
 });
 function returnToCover() {
-  if (finishTurn) {
-    sheet.removeEventListener('animationend', finishTurn);
-    finishTurn = null;
+  if (activeTurn) {
+    activeTurn.cancel();
+    activeTurn = null;
     turning = false;
   }
   sheet.classList.remove('turning', 'backward');
@@ -191,7 +197,6 @@ function turnPage(direction) {
   const currentIndex = mobile ? pageStart - 1 : direction > 0 ? pageStart : pageStart - 1;
   turnFront.innerHTML = pageFace(currentIndex, direction > 0 ? 'right' : 'left');
   turnBack.innerHTML = pageFace(currentIndex + direction, direction > 0 ? 'left' : 'right');
-  void sheet.offsetWidth;
   sheet.classList.add('turning');
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     pageStart = nextStart;
@@ -200,20 +205,28 @@ function turnPage(direction) {
     turning = false;
     return;
   }
-  finishTurn = event => {
-    if (event.target !== sheet) return;
-    sheet.removeEventListener('animationend', finishTurn);
-    finishTurn = null;
+  const animation = sheet.animate(
+    [
+      { transform: 'rotateY(0deg)' },
+      { transform: direction > 0 ? 'rotateY(-180deg)' : 'rotateY(180deg)' }
+    ],
+    { duration: 820, easing: 'cubic-bezier(.36,.02,.22,1)', fill: 'forwards' }
+  );
+  activeTurn = animation;
+  animation.finished.then(() => {
+    if (activeTurn !== animation) return;
     pageStart = nextStart;
     render();
-    // Paint the next spread under the turned leaf before removing that leaf.
-    // This prevents a one-frame stale/blank spread at the animation boundary.
+    // Let the destination spread paint beneath the finished leaf before lifting it.
     window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
-      sheet.classList.remove('turning', 'backward');
-      turning = false;
+      if (activeTurn === animation) {
+        animation.cancel();
+        activeTurn = null;
+        sheet.classList.remove('turning', 'backward');
+        turning = false;
+      }
     }));
-  };
-  sheet.addEventListener('animationend', finishTurn);
+  }).catch(() => {});
 }
 function scheduleProgressSave() {
   window.clearTimeout(progressTimer);
