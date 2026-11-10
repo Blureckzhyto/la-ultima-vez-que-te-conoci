@@ -1,6 +1,6 @@
-# Libro abierto
+# La última vez que te conocí
 
-Lector web de ciencia ficción. La interfaz se puede publicar como sitio estático en GitHub Pages. Las cuentas, comentarios y el avance se conectan directamente a Supabase Auth y PostgreSQL con políticas RLS.
+Lector web para *La última vez que te conocí*, novela de ciencia ficción. La interfaz se publica como sitio estático en GitHub Pages. Las cuentas, comentarios y el avance se conectan directamente a Supabase Auth y PostgreSQL con políticas RLS.
 
 ## Configurar Supabase (gratis para empezar)
 

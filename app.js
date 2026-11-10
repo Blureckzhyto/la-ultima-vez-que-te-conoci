@@ -19,6 +19,7 @@ let turning = false;
 let soundOn = true;
 let accountMode = 'signup';
 let progressTimer;
+let finishTurn = null;
 const smallScreen = window.matchMedia('(max-width: 700px)');
 
 function requireSupabase() {
@@ -141,16 +142,30 @@ function openBook() {
   pageSound();
   $('#bookScene').classList.add('is-open');
   $('#openHint').classList.add('is-hidden');
+  cover.classList.add('opening');
+  pages.classList.add('visible');
+  pages.setAttribute('aria-hidden', 'false');
+  $('#readerControls').classList.add('visible');
   render();
-  window.setTimeout(() => {
-    cover.classList.add('opening');
-    cover.addEventListener('transitionend', event => {
-      if (event.propertyName === 'transform' && cover.classList.contains('opening')) cover.classList.add('settled');
-    });
-    pages.classList.add('visible');
-    pages.setAttribute('aria-hidden', 'false');
-    $('#readerControls').classList.add('visible');
-  }, 460);
+}
+cover.addEventListener('transitionend', event => {
+  if (event.propertyName === 'transform' && cover.classList.contains('opening')) cover.classList.add('settled');
+});
+function returnToCover() {
+  if (finishTurn) {
+    sheet.removeEventListener('animationend', finishTurn);
+    finishTurn = null;
+    turning = false;
+    sheet.classList.remove('turning', 'backward');
+  }
+  opened = false;
+  cover.classList.remove('settled', 'opening');
+  $('#bookScene').classList.remove('is-open');
+  pages.classList.remove('visible');
+  pages.setAttribute('aria-hidden', 'true');
+  $('#readerControls').classList.remove('visible');
+  $('#openHint').classList.remove('is-hidden');
+  $('#portada').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 function turnPage(direction) {
   if (!opened || turning || !storyPages.length) return;
@@ -167,12 +182,23 @@ function turnPage(direction) {
   turnBack.innerHTML = pageFace(currentIndex + direction, direction > 0 ? 'left' : 'right');
   void sheet.offsetWidth;
   sheet.classList.add('turning');
-  window.setTimeout(() => {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     pageStart = nextStart;
     render();
     sheet.classList.remove('turning', 'backward');
     turning = false;
-  }, 980);
+    return;
+  }
+  finishTurn = event => {
+    if (event.target !== sheet) return;
+    sheet.removeEventListener('animationend', finishTurn);
+    finishTurn = null;
+    pageStart = nextStart;
+    render();
+    sheet.classList.remove('turning', 'backward');
+    turning = false;
+  };
+  sheet.addEventListener('animationend', finishTurn);
 }
 function scheduleProgressSave() {
   window.clearTimeout(progressTimer);
@@ -319,7 +345,7 @@ document.addEventListener('keydown', event => {
 });
 $('#accountBtn').addEventListener('click', () => { accountMode = 'signup'; accountForm(); });
 $('#commentsBtn').addEventListener('click', showComments);
-$('#aboutBtn').addEventListener('click', () => showModal(`<div class="eyebrow" style="justify-content:flex-start;color:#438da0">CAPÍTULO 1</div><h2>${escapeHtml(chapter?.title || 'La boca sur')}</h2><p class="sub">Ciencia ficción. Lee el capítulo completo dentro del libro.</p>`));
+$('#homeBtn').addEventListener('click', event => { event.preventDefault(); returnToCover(); });
 $('#modalClose').addEventListener('click', closeModal);
 backdrop.addEventListener('click', event => { if (event.target === backdrop) closeModal(); });
 smallScreen.addEventListener('change', () => { buildPages(); });
