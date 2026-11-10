@@ -119,9 +119,15 @@ body{font-family:var(--sans);background:radial-gradient(ellipse at 52% 42%,#121d
 .turn-underlay.visible{display:block}
 .turn-underlay.mobile-full{left:0;right:0;width:100%;border-radius:8px}
 
-/* Keep the closed book clean; reveal the already-rendered spread in the same frame as the cover turn. */
-.open-pages{opacity:0;transition:none;transition-delay:0s;pointer-events:none}
-.open-pages.visible{opacity:1;pointer-events:auto}
+/* Reveal the first spread outward from beneath the rotating cover. */
+.open-pages{opacity:1;transition:none;pointer-events:none}
+.open-pages.visible{pointer-events:auto}
+#leftPage,#rightPage{transition:clip-path .68s cubic-bezier(.4,0,.2,1);will-change:clip-path}
+#leftPage{clip-path:inset(0 0 0 50%)}
+#rightPage{clip-path:inset(0 50% 0 0)}
+.book-scene.is-open #leftPage,.book-scene.is-open #rightPage{clip-path:inset(0)}
+@media(max-width:700px){#leftPage{clip-path:inset(0)}#rightPage{clip-path:inset(0 25%)}}
+@media(prefers-reduced-motion:reduce){#leftPage,#rightPage{transition-duration:.01ms;will-change:auto}}
 
 /* A modest camera depth keeps the cover turn visibly three-dimensional. */
 .book-scene{perspective:1800px}
