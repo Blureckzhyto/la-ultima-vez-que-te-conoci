@@ -7,7 +7,7 @@ Lector web de ciencia ficción. La interfaz se puede publicar como sitio estáti
 1. Crea un proyecto en [supabase.com](https://supabase.com/).
 2. En el panel del proyecto, abre **SQL Editor**, crea una consulta y ejecuta todo el contenido de `supabase-schema.sql`.
 3. En **Project Settings > API**, copia la **Project URL** y la **publishable key** (o la antigua `anon` key). Pégalas en `supabase-config.js`.
-4. En **Authentication > URL Configuration**, añade la URL de GitHub Pages como **Site URL** y como URL permitida de redirección. GitHub Pages tendrá la forma `https://TU-USUARIO.github.io/TU-REPOSITORIO/`.
+4. En **Authentication > URL Configuration**, configura como **Site URL** `https://blureckzhyto.github.io/la-ultima-vez-que-te-conoci/` y añade esa misma URL a las URL permitidas de redirección.
 5. En **Authentication > Providers > Email**, decide si quieres exigir confirmación de correo. Si está activada, el formulario informará al lector de que revise su correo después de registrarse.
 
 La publishable/anon key está diseñada para aparecer en el navegador; las políticas RLS de `supabase-schema.sql` restringen el acceso. **Nunca copies la `secret` o `service_role` key en la web.**
