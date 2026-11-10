@@ -41,6 +41,11 @@ body{font-family:var(--sans);background:radial-gradient(ellipse at 52% 42%,#121d
 .turn-back{transform:rotateY(180deg) translateZ(.1px)}
 .stage{perspective:none}
 .book-scene{perspective:5000px}
+.closed-cover{left:25%;will-change:transform;transition:transform .68s cubic-bezier(.4,0,.2,1),filter .25s}
+.book-scene.is-open .closed-cover{left:25%}
+.book-scene.is-open .closed-cover.opening{transform:translate3d(50%,0,0) rotateY(-180deg)}
+.cover-face{will-change:transform;-webkit-backface-visibility:hidden}
+.turn-face .page-copy{will-change:transform}
 .sheet{background:linear-gradient(90deg,#e9e2d3 0%,#f7f2e7 13%,#fbf7ef 49%,#eee8dc 100%)}
 .sheet-right{background:linear-gradient(90deg,#ece5d9 0%,#fbf7ef 11%,#f8f3e8 100%)}
 .page-copy,.turn-face .page-copy{inset:52px 68px 62px}
@@ -93,3 +98,11 @@ body{font-family:var(--sans);background:radial-gradient(ellipse at 52% 42%,#121d
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 
+
+/* Final motion rules: no layout animation on the cover; turn faces are prepared while idle. */
+.open-pages{transition:opacity .22s ease;transition-delay:.2s}
+.closed-cover{left:25%;will-change:transform;transition:transform .68s cubic-bezier(.4,0,.2,1),filter .25s}
+.book-scene.is-open .closed-cover{left:25%}
+.book-scene.is-open .closed-cover.opening{transform:translate3d(50%,0,0) rotateY(-180deg)}
+.cover-face{transform:translateZ(0);will-change:transform;-webkit-backface-visibility:hidden}
+.turn-face .page-copy{will-change:transform}

@@ -4,6 +4,13 @@ const pages = $('#openPages');
 const sheet = $('#pageTurn');
 const turnFront = $('#turnFront');
 const turnBack = $('#turnBack');
+const backwardSheet = document.createElement('div');
+backwardSheet.className = 'page-turn backward';
+backwardSheet.setAttribute('aria-hidden', 'true');
+backwardSheet.innerHTML = '<div class="turn-face turn-front" id="turnBackwardFront"></div><div class="turn-face turn-back" id="turnBackwardBack"></div>';
+pages.append(backwardSheet);
+const backwardFront = $('#turnBackwardFront');
+const backwardBack = $('#turnBackwardBack');
 const leftPage = $('#leftPage');
 const rightPage = $('#rightPage');
 const PAGE_KEY = 'book-page-start-v2';
@@ -137,7 +144,17 @@ function render() {
   $('#prevBtn').disabled = pageStart <= 1;
   $('#nextBtn').disabled = pageStart >= lastStart;
   localStorage.setItem(PAGE_KEY, pageStart);
+  if (!turning) prepareTurnSheets();
   if (currentUser) scheduleProgressSave();
+}
+function prepareTurnSheets() {
+  const mobile = smallScreen.matches;
+  const forwardIndex = mobile ? pageStart - 1 : pageStart;
+  const backwardIndex = pageStart - 1;
+  turnFront.innerHTML = pageFace(forwardIndex, 'right');
+  turnBack.innerHTML = pageFace(forwardIndex + 1, 'left');
+  backwardFront.innerHTML = pageFace(backwardIndex, 'left');
+  backwardBack.innerHTML = pageFace(backwardIndex - 1, 'right');
 }
 function pageSound() {
   if (!soundOn) return;
@@ -166,14 +183,13 @@ function pageSound() {
 function openBook() {
   if (opened) return;
   opened = true;
-  pageSound();
   $('#bookScene').classList.add('is-open');
   $('#openHint').classList.add('is-hidden');
   cover.classList.add('opening');
   pages.classList.add('visible');
   pages.setAttribute('aria-hidden', 'false');
   $('#readerControls').classList.add('visible');
-  render();
+  window.requestAnimationFrame(() => pageSound());
 }
 cover.addEventListener('transitionend', event => {
   if (event.propertyName === 'transform' && cover.classList.contains('opening')) cover.classList.add('settled');
@@ -184,7 +200,8 @@ function returnToCover() {
     activeTurn = null;
     turning = false;
   }
-  sheet.classList.remove('turning', 'backward');
+  sheet.classList.remove('turning');
+  backwardSheet.classList.remove('turning');
   opened = false;
   cover.classList.remove('settled', 'opening');
   $('#bookScene').classList.remove('is-open');
@@ -201,21 +218,18 @@ function turnPage(direction) {
   const nextStart = pageStart + direction * (mobile ? 1 : 2);
   if (nextStart < 1 || nextStart > lastStart) return;
   turning = true;
-  pageSound();
-  sheet.classList.remove('backward', 'turning');
-  if (direction < 0) sheet.classList.add('backward');
-  const currentIndex = mobile ? pageStart - 1 : direction > 0 ? pageStart : pageStart - 1;
-  turnFront.innerHTML = pageFace(currentIndex, direction > 0 ? 'right' : 'left');
-  turnBack.innerHTML = pageFace(currentIndex + direction, direction > 0 ? 'left' : 'right');
-  sheet.classList.add('turning');
+  const activeSheet = direction > 0 ? sheet : backwardSheet;
+  activeSheet.classList.add('turning');
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     pageStart = nextStart;
     render();
-    sheet.classList.remove('turning', 'backward');
+    activeSheet.classList.remove('turning');
     turning = false;
+    prepareTurnSheets();
+    window.requestAnimationFrame(() => pageSound());
     return;
   }
-  const animation = sheet.animate(
+  const animation = activeSheet.animate(
     [
       { transform: 'rotateY(0deg)' },
       { transform: direction > 0 ? 'rotateY(-180deg)' : 'rotateY(180deg)' }
@@ -223,6 +237,7 @@ function turnPage(direction) {
     { duration: 680, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'forwards' }
   );
   activeTurn = animation;
+  window.requestAnimationFrame(() => pageSound());
   animation.finished.then(() => {
     if (activeTurn !== animation) return;
     pageStart = nextStart;
@@ -232,8 +247,9 @@ function turnPage(direction) {
       if (activeTurn === animation) {
         animation.cancel();
         activeTurn = null;
-        sheet.classList.remove('turning', 'backward');
+        activeSheet.classList.remove('turning');
         turning = false;
+        prepareTurnSheets();
       }
     }));
   }).catch(() => {});
