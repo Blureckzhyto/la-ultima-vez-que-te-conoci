@@ -9,7 +9,7 @@ const rightPage = $('#rightPage');
 const PAGE_KEY = 'book-page-start-v2';
 const configured = window.SUPABASE_CONFIG || {};
 const supabaseReady = Boolean(window.supabase?.createClient && configured.url?.startsWith('https://') && configured.anonKey && !configured.anonKey.startsWith('PEGA_'));
-const supabase = supabaseReady ? window.supabase.createClient(configured.url, configured.anonKey) : null;
+const sbClient = supabaseReady ? window.supabase.createClient(configured.url, configured.anonKey) : null;
 let chapter = null;
 let storyPages = [];
 let pageStart = Math.max(1, Number(localStorage.getItem(PAGE_KEY) || 1));
@@ -22,8 +22,8 @@ let progressTimer;
 const smallScreen = window.matchMedia('(max-width: 700px)');
 
 function requireSupabase() {
-  if (!supabase) throw new Error('Falta configurar Supabase. Sigue los pasos del README para activar cuentas y comentarios.');
-  return supabase;
+  if (!sbClient) throw new Error('Falta configurar Supabase. Sigue los pasos del README para activar cuentas y comentarios.');
+  return sbClient;
 }
 function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, character => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[character]);
@@ -334,12 +334,12 @@ async function boot() {
     chapter = data.chapters[0];
     await buildPages();
   } catch (error) { console.error(error); toast('No se pudo cargar el capítulo.'); }
-  if (!supabase) {
+  if (!sbClient) {
     console.warn('Supabase aún no está configurado. La lectura funciona, pero cuentas, progreso en la nube y comentarios requieren completar supabase-config.js.');
     return;
   }
   try {
-    const { data, error } = await supabase.auth.getUser();
+    const { data, error } = await sbClient.auth.getUser();
     if (error) throw error;
     if (data.user) { setUser(data.user); await loadUserProgress(); }
     else setUser(null);
